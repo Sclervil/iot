@@ -4,7 +4,7 @@ import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { InputText } from 'primereact/inputtext';
-import { useNavigate } from 'react-router-dom';
+import { json, useNavigate } from 'react-router-dom';
 import { Dropdown } from 'primereact/dropdown';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import "primereact/resources/themes/lara-light-cyan/theme.css";
@@ -12,16 +12,16 @@ import "primereact/resources/themes/lara-light-cyan/theme.css";
 
 
 function App() {
-    const base_url = 'https://www.opencve.io/api/'
+    const base_url = 'http://localhost:3001/'
     const [vendor, setVendor] = useState(null)
     const [product, setProduct] = useState(null)
     
     //Enlever le commentaire pour ces trois lignes
-    //const [vendors, setVendors] = useState([])
-    //const [products, setProducts] = useState([])
-    //const [CVEs, setCVEs] = useState([])
+    const [vendors, setVendors] = useState([])
+    const [products, setProducts] = useState([])
+    const [CVEs, setCVEs] = useState([])
 
-    //Supprimez ces lignes
+    /*
     const [vendors, setVendors] = useState([{ name: '*', human_name: '*' },
     { name: '-', human_name: '-' },
     { name: '$0.99_kindle_books_project', human_name: '$0.99 Kindle Books Project' },
@@ -86,7 +86,7 @@ function App() {
       "created_at": "2011-09-28T10:55:00Z",
       "updated_at": "2024-02-14T01:17:43Z"
   }])
-  //Jusque la
+  */
 
   const [filters, setFilters] = useState({
       global: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -107,8 +107,24 @@ function App() {
     setProduct(null)
     setProducts([])
     if(e.value !== null){
-      //Chargez les produits ici
-      //fetch(base_url + 'vendors/products?' + 'vendorName=' + e.value).then((res) => setProducts(res.json()))
+      try {
+        fetch(base_url + 'vendors/products', {
+          method: 'Get',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ vendorName:e.value }),
+        }).then((response) => {
+          if (response.ok) {
+            setProducts(response.json())
+          }
+        }).catch((e) => {
+          console.log(e)
+        });
+  
+      } catch (error) {
+        console.log(error)
+      }
     }
     
   }
@@ -117,8 +133,24 @@ function App() {
     setProduct(e.value)
     setCVEs([])
     if(e.value !== null){
-      //Chargez les CVE ici
-      //fetch(base_url + 'products/cve?' + 'vendorName=' + vendor.name + '&productName=' + e.value).then((res) => setCVEs(res.json()))
+      try {
+        fetch(base_url + 'products/cve', {
+          method: 'Get',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ vendorName:vendor, productName:e.value }),
+        }).then((response) => {
+          if (response.ok) {
+            setCVEs(response.json())
+          }
+        }).catch((e) => {
+          console.log(e)
+        });
+  
+      } catch (error) {
+        console.log(error)
+      }
     }
     
   }
@@ -147,7 +179,23 @@ function App() {
   const header = renderHeader();
 
   useEffect(() => {
-    //Charger la liste des vendeurs ici
+    try {
+      fetch(base_url + 'vendors/filtre', {
+        method: 'Get',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }).then((response) => {
+        if (response.ok) {
+          setVendors(response.json())
+        }
+      }).catch((e) => {
+        console.log(e)
+      });
+
+    } catch (error) {
+      console.log(error)
+    }
   }, []);
 
   return (
